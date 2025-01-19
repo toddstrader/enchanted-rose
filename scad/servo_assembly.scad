@@ -3,7 +3,6 @@ servo_width = 12.5;
 servo_height = 22.5 + 0.5;
 screw_offset = 2;
 screw_dia = 1;
-mount_screw_dia = 4;
 border = 10;
 tab = 5;
 tab_clearance = 3;
@@ -14,6 +13,8 @@ mount_width = border - tab;
 mount_length = border*5;
 
 $fn = 50;
+
+include <common.scad>
 
 module housing() {
     difference() {
@@ -39,19 +40,13 @@ module screw_hole() {
     cylinder(h=wall_width, d=screw_dia);
 }
 
-module mount_screw_hole() {
-    cylinder(h=mount_width, d=mount_screw_dia);
-    translate([0, 0, 3 * mount_width/4])
-    cylinder(h=mount_width/4, d1=mount_screw_dia, d2=mount_screw_dia*1.5);
-}
-
 module finished_assembly() {
     difference() {
         assembly();
         for(x=[1, -1]) {
             for (y=[1, -1]) {
                 translate([x * mount_length / 2.8, y * assembly_width / 3, 0])
-                mount_screw_hole();
+                mount_screw_hole(depth=mount_width);
                 
                 translate([0, x * servo_width / 2, y * (servo_height / 2 + screw_offset)])
                 translate([0, 0, tab_clearance + assembly_height/2])
