@@ -36,21 +36,37 @@ class Led {
 };
 
 Led onboardLed(13);
+Led spotlight(5);
+
+class SerialInterface {
+  public:
+    void init() {
+      Serial.begin(9600);
+    }
+    void handleSerial() {
+      if (!Serial) return;
+      if (Serial.peek() == -1) return;
+      String command = Serial.readString();
+      command.trim();
+      printHelp();
+      spotlight.toggle();
+    }
+  private:
+    void printHelp() {
+      Serial.println("0 -- toggle spotlight");
+    }
+};
+
+SerialInterface serialInterface;
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
+  serialInterface.init();
   onboardLed.init();
 }
 
-void handleSerial() {
-  if (!Serial) return;
-  Serial.println("hi there");
-}
 
 void loop() {
-  // put your main code here, to run repeatedly:
   delay(3000);
-  handleSerial();
+  serialInterface.handleSerial();
   onboardLed.toggle();
 }
