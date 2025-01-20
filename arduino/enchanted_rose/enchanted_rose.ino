@@ -1,3 +1,7 @@
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
 typedef enum ActiveLevel {ACTIVE_LOW = 0, ACTIVE_HIGH} ActiveLevel;
 typedef enum OnOff {OFF = 0, ON} OnOff;
 
@@ -76,13 +80,25 @@ class SerialInterface {
     }
 
     void setServoAngle() {
-      Serial.println("Enter servo number:");
+      Serial.println("Enter servo number (0-7):");
       int servo = Serial.parseInt();
+      if (servo < 0 || servo > 7) {
+        Serial.println("bad servo number");
+        return;
+      }
+
       Serial.println("Enter servo angle (0-90)");
       int angle = Serial.parseInt();
+      if (angle < 0 || angle > 90) {
+        Serial.println("bad angle");
+        return;
+      }
       Serial.println("--->");
       Serial.println(servo);
       Serial.println(angle);
+      int pulselen = map(angle, 0, 90, 1000, 2000);
+      Serial.println(pulselen);
+      pwm.writeMicroseconds(servo, pulselen);
     }
 
     bool first = true;
@@ -93,6 +109,9 @@ SerialInterface serialInterface;
 void setup() {
   serialInterface.init();
   onboardLed.init();
+  pwm.begin();
+  pwm.setOscillatorFrequency(27000000);
+  pwm.setPWMFreq(50);
 }
 
 
