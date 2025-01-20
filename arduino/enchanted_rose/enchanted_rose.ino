@@ -41,6 +41,7 @@ class Led {
 
 Led onboardLed(13);
 Led spotlight(5);
+Led flickerLeds(3);
 
 class SerialInterface {
   public:
@@ -59,10 +60,13 @@ class SerialInterface {
       Serial.setTimeout(10000);
       switch(command) {
         case 1:
-          spotlight.toggle();
+          setServoAngle();
           break;
         case 2:
-          setServoAngle();
+          spotlight.toggle();
+          break;
+        case 3:
+          flickerLeds.toggle();
           break;
         case -1:
           printHelp();
@@ -75,8 +79,9 @@ class SerialInterface {
     void printHelp() {
       Serial.println("Commands:");
       Serial.println("-1 -- this help");
-      Serial.println("1  -- toggle spotlight");
-      Serial.println("2  -- set servo angle");
+      Serial.println("1  -- set servo angle");
+      Serial.println("2  -- toggle spotlight");
+      Serial.println("3  -- toggle flicker LEDs");
     }
 
     void setServoAngle() {
