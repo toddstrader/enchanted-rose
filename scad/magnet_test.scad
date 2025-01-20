@@ -1,19 +1,8 @@
 $fn = 100;
 
+use <common.scad>
+
 dia = 25;
-
-module stem_hole() {
-    stem_dia = 10;
-    cylinder(h=5, d=stem_dia);
-}
-
-module recess() {
-    mag_dia = 6.35;
-    line_dia = 3.175;
-    
-    translate([0,0,10]) cylinder(h=15, d=mag_dia);
-    cylinder(h=25, d=line_dia);
-}
 
 //translate([80,0,0]) recess();
 
@@ -31,3 +20,6 @@ difference() {
     stem_hole();
     top();
 }
+
+translate([30,0,0])
+recess(25, 0, 10);
