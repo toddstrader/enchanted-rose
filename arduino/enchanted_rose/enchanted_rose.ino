@@ -42,19 +42,50 @@ class SerialInterface {
   public:
     void init() {
       Serial.begin(9600);
+      Serial.setTimeout(100);
     }
+
     void handleSerial() {
       if (!Serial) return;
-      if (Serial.peek() == -1) return;
-      String command = Serial.readString();
-      command.trim();
-      printHelp();
-      spotlight.toggle();
+      if (first) {
+        printHelp();
+        first = false;
+      }
+      int command = Serial.parseInt();
+      Serial.setTimeout(10000);
+      switch(command) {
+        case 1:
+          spotlight.toggle();
+          break;
+        case 2:
+          setServoAngle();
+          break;
+        case -1:
+          printHelp();
+          break;
+      }
+      Serial.setTimeout(100);
     }
+
   private:
     void printHelp() {
-      Serial.println("0 -- toggle spotlight");
+      Serial.println("Commands:");
+      Serial.println("-1 -- this help");
+      Serial.println("1  -- toggle spotlight");
+      Serial.println("2  -- set servo angle");
     }
+
+    void setServoAngle() {
+      Serial.println("Enter servo number:");
+      int servo = Serial.parseInt();
+      Serial.println("Enter servo angle (0-90)");
+      int angle = Serial.parseInt();
+      Serial.println("--->");
+      Serial.println(servo);
+      Serial.println(angle);
+    }
+
+    bool first = true;
 };
 
 SerialInterface serialInterface;
@@ -66,7 +97,7 @@ void setup() {
 
 
 void loop() {
-  delay(3000);
+  delay(500);
   serialInterface.handleSerial();
   onboardLed.toggle();
 }
