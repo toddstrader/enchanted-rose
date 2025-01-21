@@ -12,9 +12,9 @@ module stem_hole(h=5) {
     cylinder(h=h, d=stem_dia);
 }
 
-module recess(h=25, rot=0, line_rot=0) {
+module recess(h=25, rot=0, line_rot=0, extra_depth=0) {
     mag_dia = 6.35;
-    mag_depth = 15;
+    mag_depth = 15 + extra_depth;
     line_dia = 3.175;
     line_depth = h - mag_depth;
     
