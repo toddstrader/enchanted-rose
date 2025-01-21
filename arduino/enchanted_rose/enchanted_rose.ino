@@ -13,6 +13,13 @@ CRGB leds[NUM_LEDS];
 
 #define UPDATES_PER_SECOND 100
 
+#include <ArduinoBLE.h>
+
+BLEService ledService("180A"); // BLE LED Service
+
+// BLE LED Switch Characteristic - custom 128-bit UUID, read and writable by central
+BLEByteCharacteristic switchCharacteristic("2A57", BLERead | BLEWrite);
+
 typedef enum ActiveLevel {ACTIVE_LOW = 0, ACTIVE_HIGH} ActiveLevel;
 typedef enum OnOff {OFF = 0, ON} OnOff;
 
@@ -55,6 +62,11 @@ Led spotlight(5);
 Led flickerLeds(3);
 bool stripOn = false;
 
+void toggleStrip() {
+  stripOn = !stripOn;
+  if (!stripOn) FastLED.clear();
+}
+
 class SerialInterface {
   public:
     void init() {
@@ -81,8 +93,7 @@ class SerialInterface {
           flickerLeds.toggle();
           break;
         case 4:
-          stripOn = !stripOn;
-          if (!stripOn) FastLED.clear();
+          toggleStrip();
           break;
         case -1:
           printHelp();
@@ -99,6 +110,8 @@ class SerialInterface {
       Serial.println("2  -- toggle spotlight");
       Serial.println("3  -- toggle flicker LEDs");
       Serial.println("4  -- toggle LED strip");
+      Serial.println("micros:");
+      Serial.println(micros());
     }
 
     void setServoAngle() {
@@ -137,6 +150,29 @@ void setup() {
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(  BRIGHTNESS );
   FastLED.clear(true);
+
+  // begin initialization
+  if (!BLE.begin()) {
+    Serial.println("starting Bluetooth® Low Energy failed!");
+
+    while (1);
+  }
+
+  // set advertised local name and service UUID:
+  BLE.setLocalName("Enchanted Rose");
+  BLE.setAdvertisedService(ledService);
+
+  // add the characteristic to the service
+  ledService.addCharacteristic(switchCharacteristic);
+
+  // add service
+  BLE.addService(ledService);
+
+  // set the initial value for the characteristic:
+  switchCharacteristic.writeValue(0);
+
+  // start advertising
+  BLE.advertise();
 
   delay(100);
 }
@@ -200,4 +236,20 @@ void loop() {
   // TODO -- this plus BLE
   // TODO -- does Serial slow this down? -- yes
   FastLED.delay(1000 / UPDATES_PER_SECOND);
+
+  // listen for BLE peripherals to connect:
+  static BLEDevice central;
+
+  // if a central is connected to peripheral:
+  if (central) {
+    if (switchCharacteristic.written()) {
+        switch (switchCharacteristic.value()) {   // any value other than 0
+          case 01:
+            toggleStrip();
+            break;
+        }
+    }
+  } else {
+    central = BLE.central();
+  }
 }
