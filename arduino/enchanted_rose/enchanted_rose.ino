@@ -2,6 +2,17 @@
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
+#include <FastLED.h>
+
+#define LED_PIN     2
+#define NUM_LEDS    60
+#define BRIGHTNESS  64
+#define LED_TYPE    WS2811
+#define COLOR_ORDER GRB
+CRGB leds[NUM_LEDS];
+
+#define UPDATES_PER_SECOND 100
+
 typedef enum ActiveLevel {ACTIVE_LOW = 0, ACTIVE_HIGH} ActiveLevel;
 typedef enum OnOff {OFF = 0, ON} OnOff;
 
@@ -42,12 +53,13 @@ class Led {
 Led onboardLed(13);
 Led spotlight(5);
 Led flickerLeds(3);
+bool stripOn = false;
 
 class SerialInterface {
   public:
     void init() {
       Serial.begin(9600);
-      Serial.setTimeout(100);
+      Serial.setTimeout(1);
     }
 
     void handleSerial() {
@@ -68,11 +80,15 @@ class SerialInterface {
         case 3:
           flickerLeds.toggle();
           break;
+        case 4:
+          stripOn = !stripOn;
+          if (!stripOn) FastLED.clear();
+          break;
         case -1:
           printHelp();
           break;
       }
-      Serial.setTimeout(100);
+      Serial.setTimeout(1);
     }
 
   private:
@@ -82,6 +98,7 @@ class SerialInterface {
       Serial.println("1  -- set servo angle");
       Serial.println("2  -- toggle spotlight");
       Serial.println("3  -- toggle flicker LEDs");
+      Serial.println("4  -- toggle LED strip");
     }
 
     void setServoAngle() {
@@ -117,11 +134,70 @@ void setup() {
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(50);
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness(  BRIGHTNESS );
+  FastLED.clear(true);
+
+  delay(100);
 }
 
+CRGBPalette16 palette(
+    CRGB::Amethyst,
+    CRGB::Amethyst,
+    CRGB::Amethyst,
+    CRGB::White,
+    CRGB::White,
+    CRGB::White,
+    CRGB::Amethyst,
+    CRGB::White,
+    CRGB::Amethyst,
+    CRGB::White,
+    CRGB::Amethyst,
+    CRGB::White,
+    CRGB::Amethyst,
+    CRGB::White,
+    CRGB::Amethyst,
+    CRGB::White
+);
+/*
+CRGBPalette16 palette(
+  CRGB::Purple,
+  CRGB::Green,
+  CRGB::Orange,
+  CRGB::Pink,
+  CRGB::Yellow,
+  CRGB::Blue,
+  CRGB::Bisque,
+  CRGB::Teal,
+  CRGB::Lavender,
+  CRGB::Aqua,
+  CRGB::White,
+  CRGB::DarkGray,
+  CRGB::LightCoral,
+  CRGB::MediumAquamarine,
+  CRGB::Maroon,
+  CRGB::Lime
+);*/
+
+void FillLEDsFromPaletteColors( uint8_t colorIndex) {
+    for( int i = 0; i < NUM_LEDS; ++i) {
+        leds[i] = ColorFromPalette(palette, colorIndex);
+        colorIndex += 1;
+    }
+}
 
 void loop() {
-  delay(500);
   serialInterface.handleSerial();
+  // TODO -- not this
   onboardLed.toggle();
+
+  static uint8_t startIndex = 0;
+  if (stripOn) {
+    startIndex = startIndex + 1; /* motion speed */
+
+    FillLEDsFromPaletteColors(startIndex);
+  }
+  // TODO -- this plus BLE
+  // TODO -- does Serial slow this down? -- yes
+  FastLED.delay(1000 / UPDATES_PER_SECOND);
 }
