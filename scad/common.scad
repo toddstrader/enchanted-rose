@@ -8,7 +8,7 @@ module mount_screw_hole(depth) {
 }
 
 module stem_hole(h=5) {
-    stem_dia = 10;
+    stem_dia = 9.5;
     cylinder(h=h, d=stem_dia);
 }
 
@@ -25,5 +25,17 @@ module recess(h=25, rot=0, line_rot=0) {
 	rotate([line_rot,0,0])
 	translate([0,0,-line_depth])
         cylinder(h=line_depth + 5, d=line_dia);
+    }
+}
+
+module tire(h, d, radius_frac=3) {
+    radius = h/radius_frac;
+    cylinder_height = h - 2*radius;
+    cylinder_dia = d - 2*radius;
+
+    translate([0,0,radius])
+    minkowski() {
+      cylinder(h=cylinder_height, d=cylinder_dia);
+      sphere(radius);
     }
 }

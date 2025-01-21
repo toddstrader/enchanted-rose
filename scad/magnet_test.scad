@@ -21,5 +21,5 @@ difference() {
     top();
 }
 
-translate([30,0,0])
-recess(25, 0, 10);
+//translate([30,0,0])
+//recess(25, 0, 10);
