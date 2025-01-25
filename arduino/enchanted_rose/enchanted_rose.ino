@@ -222,7 +222,9 @@ void FillLEDsFromPaletteColors( uint8_t colorIndex) {
     }
 }
 
-void loop() {
+void guts() {
+  unsigned long last = 0;
+
   serialInterface.handleSerial();
   // TODO -- not this
   onboardLed.toggle();
@@ -233,23 +235,52 @@ void loop() {
 
     FillLEDsFromPaletteColors(startIndex);
   }
-  // TODO -- this plus BLE
-  // TODO -- does Serial slow this down? -- yes
-  FastLED.delay(1000 / UPDATES_PER_SECOND);
+  // // TODO -- this plus BLE
+  // // TODO -- does Serial slow this down? -- yes
+  // FastLED.delay(1000 / UPDATES_PER_SECOND);
+  unsigned now = micros();
+  if (now - last > 1000 / UPDATES_PER_SECOND) {
+    FastLED.show();
+  }
+  last = now;
+}
 
+void loop() {
   // listen for BLE peripherals to connect:
-  static BLEDevice central;
+  BLEDevice central = BLE.central();
 
-  // if a central is connected to peripheral:
+  // doesn't appear to block
+  // Serial.println("after constructor");  
   if (central) {
-    if (switchCharacteristic.written()) {
+    Serial.print("Connected to central: ");
+    // print the central's MAC address:
+    Serial.println(central.address());
+
+    // while the central is still connected to peripheral:
+    while (central.connected()) {
+      // if the remote device wrote to the characteristic,
+      // use the value to control the LED:
+      if (switchCharacteristic.written()) {
         switch (switchCharacteristic.value()) {   // any value other than 0
           case 01:
             toggleStrip();
             break;
+          case 02:
+            spotlight.toggle();
+            break;
+          case 03:
+            flickerLeds.toggle();
+            break;
         }
+      }
+      //delay(100);
+      guts();
     }
-  } else {
-    central = BLE.central();
+
+    // when the central disconnects, print it out:
+    Serial.print(F("Disconnected from central: "));
+    Serial.println(central.address());
   }
+
+  guts();
 }
