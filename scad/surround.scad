@@ -4,7 +4,7 @@ use <pins/pin2.scad>
 
 height = 76.2; // 3"
 od = 304.8; // 12"
-id = 279.4; // 11"
+id = 277 + 2;
 
 module full_surround() {
     difference() {
@@ -35,6 +35,10 @@ difference() {
     rotate([0,0,-90])
     mirror([1,0,0])
     pin_holes();
+
+    // just to test the fit
+    //translate([0,0,10])
+    //cube(500);
 }
 
 for (off = [0,15]) {
