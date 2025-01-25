@@ -16,6 +16,8 @@ tier1_dia = tier3_dia - 2*19;
 dia_tolerance = 2;
 id = tier3_dia + dia_tolerance;
 
+glass = 5;
+
 module led_keepout() {
     // TODO -- lip even with tier 3 or slightly above?
     height = tier3_height - tier2_height;
@@ -43,7 +45,7 @@ module full_surround() {
     difference() {
         surround_blank();
         cylinder(d=id, h=tier2_height + legs);
-        cylinder(d=tier1_dia + dia_tolerance, h=height);
+        cylinder(d=tier1_dia + 2*glass + dia_tolerance, h=height);
 	led_keepout();
     }
 }
@@ -64,24 +66,35 @@ module pin_holes() {
     }
 }
 
-difference() {
-    section();
-    pin_holes();
-    rotate([0,0,-90])
-    mirror([1,0,0])
-    pin_holes();
-
-    // just to test the fit
-    //translate([0,0,10])
-    //cube(500);
+module section_w_holes() {
+    difference() {
+        section();
+        pin_holes();
+        rotate([0,0,-90])
+        mirror([1,0,0])
+        pin_holes();
+    
+        // just to test the fit
+        //translate([0,0,10])
+        //cube(500);
+    }
 }
+
+section_w_holes();
+
+// for testing
+//intersection() {
+//    section_w_holes();
+//    rotate([0,0,90 - 30])
+//    section_w_holes();
+//}
 
 //led_keepout();
 
-for (off = [0,15]) {
-    translate([off,0,0])
-    pinpeg();
-}
+//for (off = [0,15]) {
+//    translate([off,0,0])
+//    pinpeg();
+//}
 
 //pin();
 //
