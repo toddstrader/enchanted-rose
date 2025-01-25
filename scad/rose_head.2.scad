@@ -3,12 +3,14 @@ $fn = 100;
 use <common.scad>
 
 module head() {
+    width = 70;
+
     intersection() {
-        tire(37, 50, radius_frac=6);
+        tire(34, width, radius_frac=6);
 	union() {
-	    cylinder(h=15, d1=20, d2=50);
-	    translate([0,0,15])
-	    cylinder(h=100, d=50);
+            cylinder(h=15, d1=20, d2=width);
+            translate([0,0,15])
+            cylinder(h=100, d=width);
 	}
     }
 }
@@ -22,14 +24,14 @@ module cavity() {
 module negative_space() {
     stem_hole_height = 5;
 
-    recess(37, extra_depth=3);
+    recess(34, extra_depth=3);
     for (ang = [0 : 90 : 360]) {
         rotate([0,0,ang])
-        recess(40, 17, 1, extra_depth=3);
+        recess(39, 23, 1, extra_depth=4);
     }
     for (ang = [45 : 90 : 360 + 45]) {
         rotate([0,0,ang])
-        recess(43, 28, 7, extra_depth=3);
+        recess(45, 36, 7, extra_depth=5);
     }
     translate([0,0,stem_hole_height])
     cavity();
@@ -45,12 +47,12 @@ module finished_head() {
 
 finished_head();
 
-//translate([70,0,0])
-//negative_space();
-//
-//translate([-70,0,0])
-//union() {
-//    head();
-//    color("red")
-//    negative_space();
-//}
+translate([70,0,0])
+negative_space();
+
+translate([-70,0,0])
+union() {
+    head();
+    color("red")
+    negative_space();
+}
