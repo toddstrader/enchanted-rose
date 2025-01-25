@@ -1,14 +1,14 @@
-$fn = 25; // TODO -- > 100
+$fn = 200;
 
 use <pins/pin2.scad>
 use <common.scad>
 
 legs = 50.8; // 2"
-tier1_height = 12;
+tier3_height = 12;
 tier2_height = 22;
-tier3_height = 27.2;
+tier1_height = 27.2;
 lip = 3;
-height = tier3_height + legs + lip;
+height = tier1_height + legs + lip;
 od = 304.8; // 12"
 tier3_dia = 277;
 tier2_dia = tier3_dia - 2*5;
@@ -17,10 +17,20 @@ dia_tolerance = 2;
 id = tier3_dia + dia_tolerance;
 
 glass = 5;
+// glass_dia = 247;
+glass_dia = tier1_dia + 2*glass;
+
+module base() {
+    cylinder(h=tier3_height, d=tier3_dia);
+    cylinder(h=tier2_height, d=tier2_dia);
+    cylinder(h=tier1_height, d=tier1_dia);
+    // cloche
+    cylinder(h=100, d=glass_dia);
+}
 
 module led_keepout() {
     // TODO -- lip even with tier 3 or slightly above?
-    height = tier3_height - tier2_height;
+    height = tier1_height - tier2_height;
     translate([0,0,tier2_height + legs])
     cylinder(h=height, d=tier3_dia + 1);
 }
@@ -45,7 +55,7 @@ module full_surround() {
     difference() {
         surround_blank();
         cylinder(d=id, h=tier2_height + legs);
-        cylinder(d=tier1_dia + 2*glass + dia_tolerance, h=height);
+        cylinder(d=glass_dia + dia_tolerance, h=height);
 	led_keepout();
     }
 }
@@ -82,6 +92,15 @@ module section_w_holes() {
 
 section_w_holes();
 
+for (off = [0,15]) {
+    translate([off,0,0])
+    pinpeg();
+}
+
+//color("red")
+//translate([0,0,legs])
+//base();
+
 // for testing
 //intersection() {
 //    section_w_holes();
@@ -90,11 +109,6 @@ section_w_holes();
 //}
 
 //led_keepout();
-
-//for (off = [0,15]) {
-//    translate([off,0,0])
-//    pinpeg();
-//}
 
 //pin();
 //
