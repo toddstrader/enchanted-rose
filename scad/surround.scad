@@ -1,15 +1,50 @@
-$fn = 100;
+$fn = 25; // TODO -- > 100
 
 use <pins/pin2.scad>
+use <common.scad>
 
-height = 76.2; // 3"
+legs = 50.8; // 2"
+tier1_height = 12;
+tier2_height = 22;
+tier3_height = 27.2;
+lip = 3;
+height = tier3_height + legs + lip;
 od = 304.8; // 12"
-id = 277 + 2;
+tier3_dia = 277;
+tier2_dia = tier3_dia - 2*5;
+tier1_dia = tier3_dia - 2*19;
+dia_tolerance = 2;
+id = tier3_dia + dia_tolerance;
+
+module led_keepout() {
+    // TODO -- lip even with tier 3 or slightly above?
+    height = tier3_height - tier2_height;
+    translate([0,0,tier2_height + legs])
+    cylinder(h=height, d=tier3_dia + 1);
+}
+
+module surround_blank() {
+    intersection() {
+        union() {
+	    tire_height = 35;
+	    translate([0,0,height-tire_height])
+	    tire(tire_height, od);
+	    cylinder(d=od, h=height-tire_height/2);
+	    translate([0,0,-5])
+	    tire(20, od+10);
+	}
+	n = 500;
+	translate([0,0,n/2])
+	cube(n, true);
+    }
+}
 
 module full_surround() {
     difference() {
-        cylinder(d=od, h=height);
-        cylinder(d=id, h=height);
+        surround_blank();
+        cylinder(d=id, h=tier2_height + legs);
+        cylinder(d=tier1_dia + dia_tolerance, h=height);
+	led_keepout();
     }
 }
 
@@ -21,7 +56,7 @@ module section() {
 }
 
 module pin_holes() {
-    offset = 15;
+    offset = 17;
     for (z = [offset, height - offset]) {
         translate([0, od/2 - (od-id)/2/2, z])
         rotate([0,90,0])
@@ -40,6 +75,8 @@ difference() {
     //translate([0,0,10])
     //cube(500);
 }
+
+//led_keepout();
 
 for (off = [0,15]) {
     translate([off,0,0])
