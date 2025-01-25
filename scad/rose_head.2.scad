@@ -17,8 +17,8 @@ module head() {
 
 module cavity() {
     translate([0,0,3])
-    cylinder(h=3, d=20);
-    cylinder(h=3, d=8);
+    cylinder(h=5, d=35);
+    cylinder(h=5, d=8);
 }
 
 module negative_space() {
@@ -27,11 +27,13 @@ module negative_space() {
     recess(34, extra_depth=3);
     for (ang = [0 : 90 : 360]) {
         rotate([0,0,ang])
-        recess(39, 23, 1, extra_depth=4);
+	translate([0,-15,0])
+        recess(34, 0, 50, extra_depth=4);
     }
     for (ang = [45 : 90 : 360 + 45]) {
         rotate([0,0,ang])
-        recess(45, 36, 7, extra_depth=5);
+	translate([0,-25,0])
+        recess(34, 0, 75, extra_depth=5);
     }
     translate([0,0,stem_hole_height])
     cavity();
@@ -47,12 +49,12 @@ module finished_head() {
 
 finished_head();
 
-translate([70,0,0])
-negative_space();
-
-translate([-70,0,0])
-union() {
-    head();
-    color("red")
-    negative_space();
-}
+//translate([70,0,0])
+//negative_space();
+//
+//translate([-70,0,0])
+//union() {
+//    head();
+//    color("red")
+//    negative_space();
+//}
