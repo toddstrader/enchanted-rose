@@ -144,6 +144,7 @@ SerialInterface serialInterface;
 void setup() {
   serialInterface.init();
   onboardLed.init();
+  flickerLeds.init();
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(50);
