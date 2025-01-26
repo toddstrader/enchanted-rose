@@ -61,7 +61,7 @@ void setup()
     pinMode(SPOTLIGHT, OUTPUT);
     digitalWrite(SPOTLIGHT, LOW);
     pinMode(FLICKER, OUTPUT);
-    digitalWrite(FLICKER, HIGH);
+    digitalWrite(FLICKER, LOW);
 
     pwm.begin();
     pwm.setOscillatorFrequency(27000000);
@@ -90,7 +90,7 @@ void loop()
                 switch (switchCharacteristic.value())
                 {
                 case 1:
-                    colorWipe(strip.Color(255, 0, 0), 20); // Red
+                    colorWipe(strip.Color(161, 27, 87), 20);
                     break;
                 case 2:
                     colorWipe(strip.Color(0, 255, 0), 20); // Green
@@ -111,16 +111,16 @@ void loop()
                     servo_angle(0, 90);
                     break;
                 case 8:
-                    digitalWrite(FLICKER, LOW);
+                    fade(FLICKER, 0, 255, 5, 30);
                     break;
                 case 9:
-                    digitalWrite(SPOTLIGHT, HIGH);
+                    fade(SPOTLIGHT, 0, 255, 5, 30);
                     break;
                 case 0:
                     strip.clear();
                     strip.show();
-                    digitalWrite(SPOTLIGHT, LOW);
-                    digitalWrite(FLICKER, HIGH);
+                    fade(SPOTLIGHT, 255, 0, 5, 30);
+                    fade(FLICKER, 255, 0, 5, 30);
                     servo_angle(0, 0);
                     break;
                 }
@@ -215,6 +215,19 @@ void theaterChaseRainbow(int wait)
             delay(wait);                 // Pause for a moment
             firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
         }
+    }
+}
+
+void fadeGuts(int pin, int value, int dly) {
+    analogWrite(pin, value);
+    delay(dly);
+}
+
+void fade(int pin, int start, int stop, int step, int dly) {
+    if (start < stop) {
+      for (int i = start; i <= stop; i += step) fadeGuts(pin, i, dly);
+    } else {
+      for (int i = start; i >= stop; i -= step) fadeGuts(pin, i, dly);
     }
 }
 
