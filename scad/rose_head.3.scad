@@ -3,7 +3,7 @@ $fn = 100;
 use <common.scad>
 
 module head() {
-    width = 50;
+    width = 60;
 
     intersection() {
         tire(34, width, radius_frac=6);
@@ -27,12 +27,12 @@ module negative_space() {
     recess(34, extra_depth=3, line_dia=4.5);
     for (ang = [0 : 90 : 360]) {
         rotate([0,0,ang])
-	translate([0,-10,0])
+	translate([0,-12.5,0])
         recess(34, 0, 50, extra_depth=4, line_dia=4.5);
     }
     for (ang = [45*1.5 : 45 : 360 + 45*1.5]) {
         rotate([0,0,ang])
-	translate([0,-20,0])
+	translate([0,-23,0])
         recess(34, 0, 75, extra_depth=5, line_dia=4.5, extra_line_depth=-3);
     }
     translate([0,0,stem_hole_height])
