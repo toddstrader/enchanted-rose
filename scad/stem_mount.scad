@@ -11,6 +11,8 @@ stem_id = 8;
 bottom_dia = stem_od + min_wall*2;
 top_dia = bottom_dia + (flange_dia - bottom_dia) / 1.5;
 
+base_height = 27.2;
+
 use <common.scad>
 
 module stem_hole(h=mount_height) {
@@ -50,7 +52,28 @@ module screw_holes() {
     }
 }
 
+module wire_hole() {
+    dia = 5;
+    h = 200;
+
+    rotate([0,0,45])
+    translate([0,-12,0])
+    rotate([10,0,0])
+    translate([0,0,h/-2])
+    cylinder(d=dia, h=h);
+}
+
 difference() {
     mount();
     screw_holes();
+    wire_hole();
 }
+
+//translate([0,0,-base_height])
+//difference() {
+//    cylinder(d=100, h=base_height);
+//    stem_hole(base_height);
+//}
+//
+//color("red")
+//wire_hole();
