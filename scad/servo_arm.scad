@@ -14,7 +14,7 @@ module old_arm() {
 }
 
 module screw_hole() {
-    screw_dia = 3.5;
+    screw_dia = 4;
     cylinder(d=screw_dia, h=100);
 }
 
