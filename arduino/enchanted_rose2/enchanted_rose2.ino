@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////////
+//                             TODO
+//
+// - trigger all servos for last petal drop? -> big power draw
+//
+////////////////////////////////////////////////////////
+
 #include <Adafruit_PWMServoDriver.h>
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
@@ -75,9 +82,9 @@ void setup()
     //all_servos_angle(0);
     //delay(5000);
     //all_servos_angle(90);
-    fade_all(true);
-    delay(2000);
-    fade_all(false);
+    //fade_all(true);
+    //delay(2000);
+    //fade_all(false);
 }
 
 void loop()
@@ -113,13 +120,15 @@ void loop()
                     theaterChase(strip.Color(255, 0, 0), 20); // Red
                     break;
                 case 5:
-                    theaterChase(strip.Color(0, 255, 0), 20); // Green
+                    fade_all(true);
                     break;
                 case 6:
                     fade_all(true);
+                    all_servos_trigger(1500);
+                    fade_all(false);
                     break;
                 case 7:
-                    all_servos_trigger(1000);
+                    all_servos_trigger(1500);
                     break;
                 case 8:
                     fade(FLICKER, 0, 255, 5, 30);
@@ -273,7 +282,10 @@ void servo_angle(int servo, int angle) {
 
 std::list<std::list<int>> servos = 
     //{{6, 4}, {3}, {5}, {0}, {1}, {2}};
-    {{5, 6}, {2}, {4}, {1}, {3}, {0}};
+    //{{5, 6}, {2}, {4}, {1}, {3}, {0}};
+    //{{2,5}, {1}, {6}, {4}, {3}, {0, 1, 2, 3, 4, 5, 6}};
+    {{6}, {2, 5}, {1}, {4}, {3}, {0}}; // <=== best so far
+    //{{1}, {2}, {5, 6}, {4}, {3}, {0}};
 
 void all_servos_angle(int angle) {
     for (auto some_servos : servos) {
@@ -306,7 +318,7 @@ void all_servos_trigger(int dly) {
         for (int servo : some_servos) {
             servo_trigger(servo);
         }
-        int pause = 500;
+        int pause = 1000;
         delay(pause);
         for (int servo : some_servos) {
             servo_reset(servo);
