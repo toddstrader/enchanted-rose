@@ -70,6 +70,9 @@ void setup()
     //all_servos_angle(0);
     //delay(5000);
     //all_servos_angle(90);
+    fade_all(true, 3, 30);
+    delay(2000);
+    fade_all(false, 3, 30);
 }
 
 void loop()
@@ -108,7 +111,7 @@ void loop()
                     theaterChase(strip.Color(0, 255, 0), 20); // Green
                     break;
                 case 6:
-                    theaterChase(strip.Color(255, 0, 255), 20); // Cyan
+                    fade_all(true, 3, 30);
                     break;
                 case 7:
                     for (int servo = 0; servo < 8; servo++) {
@@ -123,10 +126,7 @@ void loop()
                     fade(SPOTLIGHT, 0, 255, 5, 30);
                     break;
                 case 0:
-                    strip.clear();
-                    strip.show();
-                    fade(SPOTLIGHT, 255, 0, 5, 30);
-                    fade(FLICKER, 255, 0, 5, 30);
+                    fade_all(false, 3, 30);
                     all_servos_reset();
                     break;
                 }
@@ -234,6 +234,33 @@ void fade(int pin, int start, int stop, int step, int dly) {
       for (int i = start; i <= stop; i += step) fadeGuts(pin, i, dly);
     } else {
       for (int i = start; i >= stop; i -= step) fadeGuts(pin, i, dly);
+    }
+}
+
+void fade_all_guts(int value, int dly) {
+    analogWrite(SPOTLIGHT, value);
+    analogWrite(FLICKER, value);
+    uint32_t strip_color = strip.Color(
+        map(161, 0, 255, 0, value),
+        map(27, 0, 255, 0, value),
+        map(87, 0, 255, 0, value));
+    for (int i = 0; i < strip.numPixels(); i++) {                                  // For each pixel in strip...
+        strip.setPixelColor(i, strip_color); //  Set pixel's color (in RAM)
+    }
+    strip.show();
+
+    delay(dly);
+}
+
+void fade_all(bool fade_up, int step, int dly) {
+    static bool lights_up = false;
+    if (fade_up == lights_up) return;
+    lights_up = fade_up;
+
+    if (fade_up) {
+        for (int i = 0; i <= 255; i += step) fade_all_guts(i, dly);
+    } else {
+        for (int i = 255; i >= 0; i -= step) fade_all_guts(i, dly);
     }
 }
 
