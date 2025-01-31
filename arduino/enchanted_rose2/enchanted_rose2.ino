@@ -66,7 +66,10 @@ void setup()
     pwm.begin();
     pwm.setOscillatorFrequency(27000000);
     pwm.setPWMFreq(50);
-    servo_angle(0, 0);
+    all_servos_reset();
+    //all_servos_angle(0);
+    //delay(5000);
+    //all_servos_angle(90);
 }
 
 void loop()
@@ -108,7 +111,10 @@ void loop()
                     theaterChase(strip.Color(255, 0, 255), 20); // Cyan
                     break;
                 case 7:
-                    servo_angle(0, 90);
+                    for (int servo = 0; servo < 8; servo++) {
+                      servo_trigger(servo);
+                      delay(1000);
+                    }
                     break;
                 case 8:
                     fade(FLICKER, 0, 255, 5, 30);
@@ -121,7 +127,7 @@ void loop()
                     strip.show();
                     fade(SPOTLIGHT, 255, 0, 5, 30);
                     fade(FLICKER, 255, 0, 5, 30);
-                    servo_angle(0, 0);
+                    all_servos_reset();
                     break;
                 }
             }
@@ -234,4 +240,32 @@ void fade(int pin, int start, int stop, int step, int dly) {
 void servo_angle(int servo, int angle) {
     int pulselen = map(angle, 0, 90, 1000, 2000);
     pwm.writeMicroseconds(servo, pulselen);
+}
+
+void all_servos_angle(int angle) {
+    for (int servo = 0; servo < 8; servo++) {
+        servo_angle(servo, angle);
+    }
+}
+
+void servo_reset(int servo) {
+    int angle = servo % 2 ? 0 : 90;
+    servo_angle(servo, angle);
+}
+
+void servo_trigger(int servo) {
+    int angle = servo % 2 ? 90 : 0;
+    servo_angle(servo, angle);
+}
+
+void all_servos_reset() {
+    for (int servo = 0; servo < 8; servo++) {
+        servo_reset(servo);
+    }
+}
+
+void all_servos_trigger() {
+    for (int servo = 0; servo < 8; servo++) {
+        servo_trigger(servo);
+    }
 }
