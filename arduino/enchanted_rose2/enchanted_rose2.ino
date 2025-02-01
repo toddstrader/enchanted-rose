@@ -82,7 +82,7 @@ void setup()
     //all_servos_angle(0);
     //delay(5000);
     //all_servos_angle(90);
-    //fade_all(true);
+    fade_all(true);
     //delay(2000);
     //fade_all(false);
 }
@@ -252,9 +252,10 @@ void fade_all_guts(int value, int dly) {
     analogWrite(SPOTLIGHT, value);
     analogWrite(FLICKER, value);
     uint32_t strip_color = strip.Color(
-        map(161, 0, 255, 0, value),
-        map(27, 0, 255, 0, value),
-        map(87, 0, 255, 0, value));
+      // 161, 27, 87
+        map(128, 0, 255, 0, value),
+        map(14, 0, 255, 0, value),
+        map(65, 0, 255, 0, value));
     for (int i = 0; i < strip.numPixels(); i++) {                                  // For each pixel in strip...
         strip.setPixelColor(i, strip_color); //  Set pixel's color (in RAM)
     }
