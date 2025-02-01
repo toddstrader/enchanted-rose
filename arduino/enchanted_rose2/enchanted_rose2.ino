@@ -2,6 +2,7 @@
 //                             TODO
 //
 // - trigger all servos for last petal drop? -> big power draw
+// - correct numbe of LEDs in strip
 //
 ////////////////////////////////////////////////////////
 
@@ -82,7 +83,7 @@ void setup()
     //all_servos_angle(0);
     //delay(5000);
     //all_servos_angle(90);
-    fade_all(true);
+    //fade_all(true);
     //delay(2000);
     //fade_all(false);
 }
@@ -285,8 +286,10 @@ std::list<std::list<int>> servos =
     //{{6, 4}, {3}, {5}, {0}, {1}, {2}};
     //{{5, 6}, {2}, {4}, {1}, {3}, {0}};
     //{{2,5}, {1}, {6}, {4}, {3}, {0, 1, 2, 3, 4, 5, 6}};
-    {{6}, {2, 5}, {1}, {4}, {3}, {0}}; // <=== best so far
+    //{{6}, {2, 5}, {1}, {4}, {3}, {0}}; // <=== best so far
     //{{1}, {2}, {5, 6}, {4}, {3}, {0}};
+    {{6}, {2, 5, 6}, {1, 2, 5, 6}, {4, 1, 2, 5, 6}, {3, 4, 1, 2, 5, 6}, {0, 1, 2, 3, 4, 5, 6}}; // <=== better? -- yes
+    //{{2}, {2, 1}, {5, 6, 2, 1}, {4, 5, 6, 2, 1}, {3, 4, 5, 6, 2, 1}, {0, 1, 2, 3, 4, 5, 6}};
 
 void all_servos_angle(int angle) {
     for (auto some_servos : servos) {
