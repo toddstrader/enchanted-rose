@@ -97,6 +97,28 @@ for (off = [0,15]) {
     pinpeg();
 }
 
+extra_height = 8;
+
+module extra_foot() {
+    extra_extra = 5;
+
+    translate([0,0,-extra_height])
+    difference() {
+        cylinder(h=extra_height + extra_extra, d=od+10);
+	cylinder(h=extra_height + extra_extra, d=id);
+    }
+}
+
+module extra_foot_section() {
+    intersection() {
+        extra_foot();
+	translate([0,0,-extra_height])
+	cube(500);
+    }
+}
+
+extra_foot_section();
+
 //color("red")
 //translate([0,0,legs])
 //base();
