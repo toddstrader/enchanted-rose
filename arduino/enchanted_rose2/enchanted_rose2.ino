@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////
 //                             TODO
 //
+// - switch to Unnamed for performance
+//
 ////////////////////////////////////////////////////////
 
 #include <Adafruit_PWMServoDriver.h>
@@ -20,10 +22,10 @@ Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 #include <vector>
 
-BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214"); // BLE LED Service
+BLEService ledService("7e842768-89e4-4c30-a7b2-f90c1131a517"); // BLE LED Service
 
 // BLE LED Switch Characteristic - custom 128-bit UUID, read and writable by central
-BLEByteCharacteristic switchCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
+BLEByteCharacteristic switchCharacteristic("b60b3c3c-1ebb-4b02-81f4-94b26c9c7912", BLERead | BLEWrite);
 
 void all_servos_trigger(int dly = 0);
 void fade_all(bool fade_up, int step = 3, int dly = 30);
@@ -58,7 +60,7 @@ void setup()
     Serial.println(BLE.address());
 
     // set advertised local name and service UUID:
-    BLE.setLocalName("LED");
+    BLE.setLocalName("Enchanted Rose"); // TODO -- Unnamed
     BLE.setAdvertisedService(ledService);
 
     // add the characteristic to the service
