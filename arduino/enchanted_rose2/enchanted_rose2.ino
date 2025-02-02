@@ -1,9 +1,6 @@
 ////////////////////////////////////////////////////////
 //                             TODO
 //
-// - trigger all servos for last petal drop? -> big power draw
-// - correct numbe of LEDs in strip
-//
 ////////////////////////////////////////////////////////
 
 #include <Adafruit_PWMServoDriver.h>
@@ -13,11 +10,11 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #include <Adafruit_NeoPixel.h>
 
 #define PIN 2 // Pin where NeoPixels are connected
-#define LEDS 60
+#define LEDS 50
 #define SPOTLIGHT 5
 #define FLICKER 3
 
-Adafruit_NeoPixel strip(60, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 #include <ArduinoBLE.h>
 
@@ -80,12 +77,6 @@ void setup()
     pwm.setOscillatorFrequency(27000000);
     pwm.setPWMFreq(50);
     all_servos_reset();
-    //all_servos_angle(0);
-    //delay(5000);
-    //all_servos_angle(90);
-    //fade_all(true);
-    //delay(2000);
-    //fade_all(false);
 }
 
 void loop()
@@ -108,18 +99,6 @@ void loop()
             {
                 switch (switchCharacteristic.value())
                 {
-                case 1:
-                    colorWipe(strip.Color(161, 27, 87), 20);
-                    break;
-                case 2:
-                    colorWipe(strip.Color(0, 255, 0), 20); // Green
-                    break;
-                case 3:
-                    colorWipe(strip.Color(0, 0, 255), 20); // Blue
-                    break;
-                case 4:
-                    theaterChase(strip.Color(255, 0, 0), 20); // Red
-                    break;
                 case 5:
                     fade_all(true);
                     break;
@@ -143,95 +122,6 @@ void loop()
                     break;
                 }
             }
-        }
-    }
-}
-
-// Fill strip pixels one after another with a color. Strip is NOT cleared
-// first; anything there will be covered pixel by pixel. Pass in color
-// (as a single 'packed' 32-bit value, which you can get by calling
-// strip.Color(red, green, blue) as shown in the loop() function above),
-// and a delay time (in milliseconds) between pixels.
-void colorWipe(uint32_t color, int wait)
-{
-    for (int i = 0; i < strip.numPixels(); i++)
-    {                                  // For each pixel in strip...
-        strip.setPixelColor(i, color); //  Set pixel's color (in RAM)
-        strip.show();                  //  Update strip to match
-        delay(wait);                   //  Pause for a moment
-    }
-}
-
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void theaterChase(uint32_t color, int wait)
-{
-    for (int a = 0; a < 10; a++)
-    { // Repeat 10 times...
-        for (int b = 0; b < 3; b++)
-        {                  //  'b' counts from 0 to 2...
-            strip.clear(); //   Set all pixels in RAM to 0 (off)
-            // 'c' counts up from 'b' to end of strip in steps of 3...
-            for (int c = b; c < strip.numPixels(); c += 3)
-            {
-                strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
-            }
-            strip.show(); // Update strip with new contents
-            delay(wait);  // Pause for a moment
-        }
-    }
-}
-
-// Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
-void rainbow(int wait)
-{
-    // Hue of first pixel runs 5 complete loops through the color wheel.
-    // Color wheel has a range of 65536 but it's OK if we roll over, so
-    // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
-    // means we'll make 5*65536/256 = 1280 passes through this outer loop:
-    for (long firstPixelHue = 0; firstPixelHue < 5 * 65536; firstPixelHue += 256)
-    {
-        for (int i = 0; i < strip.numPixels(); i++)
-        { // For each pixel in strip...
-            // Offset pixel hue by an amount to make one full revolution of the
-            // color wheel (range of 65536) along the length of the strip
-            // (strip.numPixels() steps):
-            int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
-            // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-            // optionally add saturation and value (brightness) (each 0 to 255).
-            // Here we're using just the single-argument hue variant. The result
-            // is passed through strip.gamma32() to provide 'truer' colors
-            // before assigning to each pixel:
-            strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
-        }
-        strip.show(); // Update strip with new contents
-        delay(wait);  // Pause for a moment
-    }
-}
-
-// Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
-void theaterChaseRainbow(int wait)
-{
-    int firstPixelHue = 0; // First pixel starts at red (hue 0)
-    for (int a = 0; a < 30; a++)
-    { // Repeat 30 times...
-        for (int b = 0; b < 3; b++)
-        {                  //  'b' counts from 0 to 2...
-            strip.clear(); //   Set all pixels in RAM to 0 (off)
-            // 'c' counts up from 'b' to end of strip in increments of 3...
-            for (int c = b; c < strip.numPixels(); c += 3)
-            {
-                // hue of pixel 'c' is offset by an amount to make one full
-                // revolution of the color wheel (range 65536) along the length
-                // of the strip (strip.numPixels() steps):
-                int hue = firstPixelHue + c * 65536L / strip.numPixels();
-                uint32_t color = strip.gamma32(strip.ColorHSV(hue)); // hue -> RGB
-                strip.setPixelColor(c, color);                       // Set pixel 'c' to value 'color'
-            }
-            strip.show();                // Update strip with new contents
-            delay(wait);                 // Pause for a moment
-            firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
         }
     }
 }
@@ -289,7 +179,7 @@ std::list<std::list<int>> servos =
     //{{6}, {2, 5}, {1}, {4}, {3}, {0}}; // cumulative servos is too much power
     //{{1}, {2}, {5, 6}, {4}, {3}, {0}};
     //{{6}, {2, 5, 6}, {1, 2, 5, 6}, {4, 1, 2, 5, 6}, {3, 4, 1, 2, 5, 6}, {0, 1, 2, 3, 4, 5, 6}}; // <=== better? -- yes
-    {{6}, {2, 5, 6}, {1, 2, 5, 6}, {4}, {3}, {0}}; // something in between
+    {{6}, {2, 5, 6}, {1, 2, 5, 6}, {4}, {3, 4}, {0}}; // something in between
     //{{2}, {2, 1}, {5, 6, 2, 1}, {4, 5, 6, 2, 1}, {3, 4, 5, 6, 2, 1}, {0, 1, 2, 3, 4, 5, 6}};
 
 void all_servos_angle(int angle) {
@@ -311,10 +201,8 @@ void servo_trigger(int servo) {
 }
 
 void all_servos_reset() {
-    for (auto some_servos : servos) {
-        for (int servo : some_servos) {
-            servo_reset(servo);
-        }
+    for (int servo = 0; servo < 7; servo++) {
+        servo_reset(servo);
     }
 }
 
