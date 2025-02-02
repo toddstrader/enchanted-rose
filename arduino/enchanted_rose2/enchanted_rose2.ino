@@ -18,7 +18,7 @@ Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 #include <ArduinoBLE.h>
 
-#include <list>
+#include <vector>
 
 BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214"); // BLE LED Service
 
@@ -27,6 +27,17 @@ BLEByteCharacteristic switchCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214
 
 void all_servos_trigger(int dly = 0);
 void fade_all(bool fade_up, int step = 3, int dly = 30);
+void fade_all_toggle(int step = 3, int dly = 30);
+
+std::vector<std::vector<int>> servos = 
+    //{{6, 4}, {3}, {5}, {0}, {1}, {2}};
+    //{{5, 6}, {2}, {4}, {1}, {3}, {0}};
+    //{{2,5}, {1}, {6}, {4}, {3}, {0, 1, 2, 3, 4, 5, 6}};
+    //{{6}, {2, 5}, {1}, {4}, {3}, {0}}; // cumulative servos is too much power
+    //{{1}, {2}, {5, 6}, {4}, {3}, {0}};
+    //{{6}, {2, 5, 6}, {1, 2, 5, 6}, {4, 1, 2, 5, 6}, {3, 4, 1, 2, 5, 6}, {0, 1, 2, 3, 4, 5, 6}}; // <=== better? -- yes
+    {{6}, {2, 5, 6}, {1, 2, 5, 6}, {4}, {3, 4}, {0}}; // something in between
+    //{{2}, {2, 1}, {5, 6, 2, 1}, {4, 5, 6, 2, 1}, {3, 4, 5, 6, 2, 1}, {0, 1, 2, 3, 4, 5, 6}};
 
 void setup()
 {
@@ -97,29 +108,31 @@ void loop()
             // use the value to control the LED:
             if (switchCharacteristic.written())
             {
-                switch (switchCharacteristic.value())
+                int value = switchCharacteristic.value();
+                switch (value)
                 {
-                case 5:
-                    fade_all(true);
-                    break;
-                case 6:
+                case 0xa:
                     fade_all(true);
                     all_servos_trigger(1500);
                     fade_all(false);
                     break;
-                case 7:
+                case 0xb:
                     all_servos_trigger(1500);
                     break;
-                case 8:
+                case 0xc:
                     fade(FLICKER, 0, 255, 5, 30);
                     break;
-                case 9:
+                case 0xd:
                     fade(SPOTLIGHT, 0, 255, 5, 30);
                     break;
                 case 0:
-                    fade_all(false);
-                    all_servos_reset();
+                    fade_all_toggle();
                     break;
+                default:
+                    if (value > 0 && value <= 6) {
+                        servos_trigger(servos[value-1]);
+                        if (value == 6) fade_all(false);
+                    }
                 }
             }
         }
@@ -155,8 +168,9 @@ void fade_all_guts(int value, int dly) {
     delay(dly);
 }
 
+bool lights_up = false;
+
 void fade_all(bool fade_up, int step, int dly) {
-    static bool lights_up = false;
     if (fade_up == lights_up) return;
     lights_up = fade_up;
 
@@ -167,20 +181,14 @@ void fade_all(bool fade_up, int step, int dly) {
     }
 }
 
+void fade_all_toggle(int step, int dly) {
+    fade_all(!lights_up, step, dly);
+}
+
 void servo_angle(int servo, int angle) {
     int pulselen = map(angle, 0, 90, 1000, 2000);
     pwm.writeMicroseconds(servo, pulselen);
 }
-
-std::list<std::list<int>> servos = 
-    //{{6, 4}, {3}, {5}, {0}, {1}, {2}};
-    //{{5, 6}, {2}, {4}, {1}, {3}, {0}};
-    //{{2,5}, {1}, {6}, {4}, {3}, {0, 1, 2, 3, 4, 5, 6}};
-    //{{6}, {2, 5}, {1}, {4}, {3}, {0}}; // cumulative servos is too much power
-    //{{1}, {2}, {5, 6}, {4}, {3}, {0}};
-    //{{6}, {2, 5, 6}, {1, 2, 5, 6}, {4, 1, 2, 5, 6}, {3, 4, 1, 2, 5, 6}, {0, 1, 2, 3, 4, 5, 6}}; // <=== better? -- yes
-    {{6}, {2, 5, 6}, {1, 2, 5, 6}, {4}, {3, 4}, {0}}; // something in between
-    //{{2}, {2, 1}, {5, 6, 2, 1}, {4, 5, 6, 2, 1}, {3, 4, 5, 6, 2, 1}, {0, 1, 2, 3, 4, 5, 6}};
 
 void all_servos_angle(int angle) {
     for (auto some_servos : servos) {
@@ -206,17 +214,22 @@ void all_servos_reset() {
     }
 }
 
+int servo_pause = 1000;
+
+void servos_trigger(std::vector<int>& some_servos) {
+    for (int servo : some_servos) {
+        servo_trigger(servo);
+    }
+    delay(servo_pause);
+    for (int servo : some_servos) {
+        servo_reset(servo);
+    }
+}
+
 void all_servos_trigger(int dly) {
     for (auto some_servos : servos) {
-        for (int servo : some_servos) {
-            servo_trigger(servo);
-        }
-        int pause = 1000;
-        delay(pause);
-        for (int servo : some_servos) {
-            servo_reset(servo);
-        }
-        int delay_left = dly - pause;
+        servos_trigger(some_servos);
+        int delay_left = dly - servo_pause;
         if (delay_left > 0) delay(dly);
     }
 }
