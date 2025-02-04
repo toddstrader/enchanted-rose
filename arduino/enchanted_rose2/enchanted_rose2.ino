@@ -103,6 +103,11 @@ void loop()
         // print the central's MAC address:
         Serial.println(central.address());
 
+        //if (central.address() != "68:ef:d3:37:f5:ef") central.disconnect();
+
+        bool handshake = false;
+        int connect_time = micros();
+
         // while the central is still connected to peripheral:
         while (central.connected())
         {
@@ -113,19 +118,22 @@ void loop()
                 int value = switchCharacteristic.value();
                 switch (value)
                 {
-                case 0xa:
+                case 0x1a:
                     fade_all(true);
                     all_servos_trigger(1500);
                     fade_all(false);
                     break;
-                case 0xb:
+                case 0x1b:
                     all_servos_trigger(1500);
                     break;
-                case 0xc:
+                case 0x1c:
                     fade(FLICKER, 0, 255, 5, 30);
                     break;
-                case 0xd:
+                case 0x1d:
                     fade(SPOTLIGHT, 0, 255, 5, 30);
+                    break;
+                case 0x7f:
+                    handshake = true;
                     break;
                 case 0:
                     fade_all_toggle();
@@ -137,6 +145,7 @@ void loop()
                     }
                 }
             }
+            if (!handshake && micros() - connect_time > 15000000) central.disconnect();
         }
     }
 }
